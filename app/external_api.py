@@ -1,8 +1,9 @@
 import httpx
+
 from app.core.config import settings
 
 
-async def fetch_hero_by_name(name: str) -> tuple | None:
+async def fetch_hero_by_name(name: str) -> tuple:
     url = f"{settings.BASE_URL_HERO}/{settings.TOKEN_HERO}/search/{name}"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)

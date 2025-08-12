@@ -1,16 +1,15 @@
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-from fastapi import Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_session
-from app.schemas.hero import HeroCreate, HeroOut, HeroesResponse, FilterInfo
-from app.crud import get_hero_by_name, create_hero
+from app.crud import create_hero, get_hero_by_name
 from app.external_api import fetch_hero_by_name
 from app.models.hero import Hero
-from fastapi import APIRouter
+from app.schemas.hero import FilterInfo, HeroCreate, HeroesResponse, HeroOut
 from app.utils.hero import apply_filter
-
 
 router = APIRouter()
 
@@ -24,7 +23,7 @@ async def add_hero(hero_in: HeroCreate, session: AsyncSession = Depends(get_sess
     ext_hero_name, powerstates = await fetch_hero_by_name(hero_in.name)
     if not ext_hero_name:
         raise HTTPException(
-            status_code=404, detail=f"Герой с данным именем {ext_hero_name} не может быть создан."
+            status_code=404, detail=f"Герой с данным именем {hero_in.name} не может быть создан."
         )
 
     hero = await create_hero(session, ext_hero_name, powerstates)
