@@ -9,6 +9,24 @@
 Запуск через Docker и Docker Compose для удобства локальной разработки и тестирования.
 ```
 
+Нужно создать .env файл в корне проекта
+Пример:
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=hero
+DB_PASS=hero
+DB_NAME=heroes
+
+TOKEN_HERO=... можно получать через сайт https://superheroapi.com/
+
+TEST_DB_HOST=localhost
+TEST_DB_PORT=5433
+TEST_DB_USER=test_hero
+TEST_DB_PASS=test_hero
+TEST_DB_NAME=test_heroes
+```
+
 Для запуска через докер:  
 Скачиваем образы и запускаем контейнеры.  
 Скопирует локальный проект в контейнер и установить все зависимости
