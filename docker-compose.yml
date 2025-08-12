@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:17
+    container_name: heroes_db
+    environment:
+      POSTGRES_USER: hero
+      POSTGRES_PASSWORD: hero
+      POSTGRES_DB: heroes
+    ports:
+      - "5432:5432"
+    volumes:
+      - hero_db:/var/lib/postgresql/data
+
+  test_db:
+    image: postgres:17
+    container_name: test_heroes_db
+    environment:
+      POSTGRES_USER: test_hero
+      POSTGRES_PASSWORD: test_hero
+      POSTGRES_DB: test_heroes
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_hero_db:/var/lib/postgresql/data
+
+  web:
+    build: .
+    working_dir: /project
+    container_name: heroes_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    environment:
+      TEST_DB_PORT: 5432
+      DB_HOST: db
+      TEST_DB_HOST: test_db
+    volumes:
+      - ./app:/project/app
+      - ./alembic.ini:/project/alembic.ini
+      - ./alembic:/project/alembic
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  test_hero_db:
+  hero_db:
