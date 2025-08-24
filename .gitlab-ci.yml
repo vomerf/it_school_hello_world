@@ -10,7 +10,7 @@ build-job:
   before_script:
     - pip install --upgrade pip
   script:
-    - echo "Build stage: preparing environment..."
+    - echo "Build stage - preparing environment..."
     - pip install -r requirements.txt
 
 # --- Test Stage ---
@@ -38,5 +38,5 @@ lint-test-job:
 deploy-job:
   stage: deploy
   script:
-    - echo "Deploy stage: would deploy application here..."
+    - echo "Deploy stag - would deploy application here..."
   when: on_success
