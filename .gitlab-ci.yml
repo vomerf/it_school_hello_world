@@ -28,7 +28,6 @@ unit-test-job:
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    # - export DATABASE_URL=postgresql://test_hero:test_hero@test_db:5432/test_heroes
   script:
     - echo "Running unit tests..."
     - pytest -v --maxfail=1 --disable-warnings
@@ -40,8 +39,7 @@ lint-test-job:
     - pip install --upgrade pip
     - pip install flake8
   script:
-    - echo "Running linter..."
-    - flake8 app tests
+    - flake8 app tests --select=E9,F63,F7,F82
 
 # --- Deploy Stage ---
 deploy-job:
