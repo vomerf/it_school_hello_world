@@ -28,7 +28,7 @@ unit-test-job:
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - export DATABASE_URL=postgresql://test_hero:test_hero@test_db:5432/test_heroes
+    # - export DATABASE_URL=postgresql://test_hero:test_hero@test_db:5432/test_heroes
   script:
     - echo "Running unit tests..."
     - pytest -v --maxfail=1 --disable-warnings
