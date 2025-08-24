@@ -3,47 +3,52 @@ stages:
   - test
   - deploy
 
-# --- Build Stage ---
+# ----------------------------
+# Build stage: собираем Docker-образ
+# ----------------------------
 build-job:
   stage: build
-  image: python:3.10
-  before_script:
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
   script:
-    - echo "Build stage dependencies installed"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE:latest" .
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+  only:
+    - main
 
-# --- Test Stage ---
+# ----------------------------
+# Test stage: прогоняем тесты и линтер
+# ----------------------------
 unit-test-job:
   stage: test
   image: python:3.10
-  services:
-    - name: postgres:17
-      alias: test_db
-  variables:
-    POSTGRES_DB: test_heroes
-    POSTGRES_USER: test_hero
-    POSTGRES_PASSWORD: test_hero
-    POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
   script:
     - echo "Running unit tests..."
     - pytest -v --maxfail=1 --disable-warnings
-
-lint-test-job:
-  stage: test
-  image: python:3.10
-  before_script:
-    - pip install --upgrade pip
+    - echo "Running linter..."
     - pip install flake8
-  script:
-    - flake8 app tests --select=E9,F63,F7,F82
+    - flake8 app tests
+  only:
+    - main
 
-# --- Deploy Stage ---
-deploy-job:
-  stage: deploy
-  script:
-    - echo "Deploy stage would deploy application here..."
+# ----------------------------
+# Deploy stage: деплой на сервер
+# ----------------------------
+# deploy-job:
+#   stage: deploy
+#   image: alpine:latest
+#   before_script:
+#     - apk add --no-cache openssh
+#   script:
+#     - echo "Deploying application..."
+#     - ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd /project && git pull && docker-compose up -d --build"
+#   only:
+#     - main
 
