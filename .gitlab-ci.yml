@@ -9,17 +9,26 @@ build-job:
   image: python:3.10
   before_script:
     - pip install --upgrade pip
-  script:
-    - echo "Build stage - preparing environment..."
     - pip install -r requirements.txt
+  script:
+    - echo "Build stage dependencies installed"
 
 # --- Test Stage ---
 unit-test-job:
   stage: test
   image: python:3.10
+  services:
+    - name: postgres:17
+      alias: test_db
+  variables:
+    POSTGRES_DB: test_heroes
+    POSTGRES_USER: test_hero
+    POSTGRES_PASSWORD: test_hero
+    POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
+    - export DATABASE_URL=postgresql://test_hero:test_hero@test_db:5432/test_heroes
   script:
     - echo "Running unit tests..."
     - pytest -v --maxfail=1 --disable-warnings
@@ -38,5 +47,5 @@ lint-test-job:
 deploy-job:
   stage: deploy
   script:
-    - echo "Deploy stag - would deploy application here..."
-  when: on_success
+    - echo "Deploy stage would deploy application here..."
+
