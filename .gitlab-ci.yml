@@ -26,17 +26,22 @@ build-job:
 unit-test-job:
   stage: test
   image: python:3.10
+  services:
+    - name: postgres:17
+      alias: test_db
+  variables:
+    POSTGRES_DB: test_heroes
+    POSTGRES_USER: test_hero
+    POSTGRES_PASSWORD: test_hero
+    POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
+    - pip install flake8
   script:
     - echo "Running unit tests..."
-    - pytest -v --maxfail=1 --disable-warnings
-    - echo "Running linter..."
-    - pip install flake8
     - flake8 app tests
-  only:
-    - main
+    - pytest -v --maxfail=1 --disable-warnings
 
 # ----------------------------
 # Deploy stage: деплой на сервер
