@@ -74,3 +74,8 @@ async def get_heroes(
         return HeroesResponse(heroes=None, filters_no_results=filters_info)
 
     return HeroesResponse(heroes=heroes, filters_no_results=None)
+
+
+@router.get("/test", response_model=HeroesResponse)
+async def test_handle():
+    return {"test": "ok"}
