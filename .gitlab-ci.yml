@@ -3,14 +3,18 @@ stages:
   - test
   - deploy
 
-# --- Build Stage ---
+# ----------------------------
+# Build stage: собираем Docker-образ
+# ----------------------------
 build-job:
   stage: build
-  image: python:3.10
-  before_script:
-    - pip install --upgrade pip
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
   script:
-    - echo "Build stage - preparing environment..."
+    - echo "Build stage: preparing environment..."
     - pip install -r requirements.txt
 
 # --- Test Stage ---
@@ -34,19 +38,19 @@ unit-test-job:
     - flake8 app tests
     - pytest -v --maxfail=1 --disable-warnings
 
-# lint-test-job:
-#   stage: test
-#   image: python:3.10
-#   before_script:
-#     - pip install --upgrade pip
-#     - pip install flake8
-#   script:
-#     - echo "Running linter..."
-#     - flake8 app tests
+lint-test-job:
+  stage: test
+  image: python:3.10
+  before_script:
+    - pip install --upgrade pip
+    - pip install flake8
+  script:
+    - echo "Running linter..."
+    - flake8 app tests
 
 # --- Deploy Stage ---
 deploy-job:
   stage: deploy
   script:
-    - echo "Deploy stage - would deploy application here..."
+    - echo "Deploy stage: would deploy application here..."
   when: on_success
