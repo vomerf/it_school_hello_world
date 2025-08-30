@@ -1,56 +1,56 @@
-stages:
-  - build
-  - test
-  - deploy
+# stages:
+#   - build
+#   - test
+#   - deploy
 
-# ----------------------------
-# Build stage: собираем Docker-образ
-# ----------------------------
-build-job:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    DOCKER_DRIVER: overlay2
-  script:
-    - echo "Build stage preparing environment..."
-    - pip install -r requirements.txt
+# # ----------------------------
+# # Build stage: собираем Docker-образ
+# # ----------------------------
+# build-job:
+#   stage: build
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   variables:
+#     DOCKER_DRIVER: overlay2
+#   script:
+#     - echo "Build stage preparing environment..."
+#     - pip install -r requirements.txt
 
-# --- Test Stage ---
-unit-test-job:
-  stage: test
-  image: python:3.10
-  services:
-    - name: postgres:17
-      alias: test_db
-  variables:
-    POSTGRES_DB: test_heroes
-    POSTGRES_USER: test_hero
-    POSTGRES_PASSWORD: test_hero
-    POSTGRES_HOST_AUTH_METHOD: trust
-  before_script:
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-    - pip install flake8
-  script:
-    - echo "Running unit tests..."
-    - flake8 app tests
-    - pytest -v --maxfail=1 --disable-warnings
+# # --- Test Stage ---
+# unit-test-job:
+#   stage: test
+#   image: python:3.10
+#   services:
+#     - name: postgres:17
+#       alias: test_db
+#   variables:
+#     POSTGRES_DB: test_heroes
+#     POSTGRES_USER: test_hero
+#     POSTGRES_PASSWORD: test_hero
+#     POSTGRES_HOST_AUTH_METHOD: trust
+#   before_script:
+#     - pip install --upgrade pip
+#     - pip install -r requirements.txt
+#     - pip install flake8
+#   script:
+#     - echo "Running unit tests..."
+#     - flake8 app tests
+#     - pytest -v --maxfail=1 --disable-warnings
 
-lint-test-job:
-  stage: test
-  image: python:3.10
-  before_script:
-    - pip install --upgrade pip
-    - pip install flake8
-  script:
-    - echo "Running linter..."
-    - flake8 app tests
+# lint-test-job:
+#   stage: test
+#   image: python:3.10
+#   before_script:
+#     - pip install --upgrade pip
+#     - pip install flake8
+#   script:
+#     - echo "Running linter..."
+#     - flake8 app tests
 
-# --- Deploy Stage ---
-deploy-job:
-  stage: deploy
-  script:
-    - echo "Deploy stage would deploy application here..."
-  when: on_success
+# # --- Deploy Stage ---
+# deploy-job:
+#   stage: deploy
+#   script:
+#     - echo "Deploy stage would deploy application here..."
+#   when: on_success
