@@ -10,33 +10,43 @@ build-job:
   before_script:
     - pip install --upgrade pip
   script:
-    - echo "Build stage: preparing environment..."
+    - echo "Build stage - preparing environment..."
     - pip install -r requirements.txt
 
 # --- Test Stage ---
 unit-test-job:
   stage: test
   image: python:3.10
+  services:
+    - name: postgres:17
+      alias: test_db
+  variables:
+    POSTGRES_DB: test_heroes
+    POSTGRES_USER: test_hero
+    POSTGRES_PASSWORD: test_hero
+    POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
-  script:
-    - echo "Running unit tests..."
-    - pytest -v --maxfail=1 --disable-warnings
-
-lint-test-job:
-  stage: test
-  image: python:3.10
-  before_script:
-    - pip install --upgrade pip
     - pip install flake8
   script:
-    - echo "Running linter..."
+    - echo "Running unit tests..."
     - flake8 app tests
+    - pytest -v --maxfail=1 --disable-warnings
+
+# lint-test-job:
+#   stage: test
+#   image: python:3.10
+#   before_script:
+#     - pip install --upgrade pip
+#     - pip install flake8
+#   script:
+#     - echo "Running linter..."
+#     - flake8 app tests
 
 # --- Deploy Stage ---
 deploy-job:
   stage: deploy
   script:
-    - echo "Deploy stage: would deploy application here..."
+    - echo "Deploy stage - would deploy application here..."
   when: on_success
