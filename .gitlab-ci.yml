@@ -1,56 +1,27 @@
-# stages:
-#   - build
-#   - test
-#   - deploy
+stages:
+  # - build
+  # - test
+  - deploy
 
-# # ----------------------------
-# # Build stage: собираем Docker-образ
-# # ----------------------------
-# build-job:
-#   stage: build
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   variables:
-#     DOCKER_DRIVER: overlay2
-#   script:
-#     - echo "Build stage preparing environment..."
-#     - pip install -r requirements.txt
 
-# # --- Test Stage ---
-# unit-test-job:
-#   stage: test
-#   image: python:3.10
-#   services:
-#     - name: postgres:17
-#       alias: test_db
-#   variables:
-#     POSTGRES_DB: test_heroes
-#     POSTGRES_USER: test_hero
-#     POSTGRES_PASSWORD: test_hero
-#     POSTGRES_HOST_AUTH_METHOD: trust
-#   before_script:
-#     - pip install --upgrade pip
-#     - pip install -r requirements.txt
-#     - pip install flake8
-#   script:
-#     - echo "Running unit tests..."
-#     - flake8 app tests
-#     - pytest -v --maxfail=1 --disable-warnings
-
-# lint-test-job:
-#   stage: test
-#   image: python:3.10
-#   before_script:
-#     - pip install --upgrade pip
-#     - pip install flake8
-#   script:
-#     - echo "Running linter..."
-#     - flake8 app tests
-
-# # --- Deploy Stage ---
-# deploy-job:
-#   stage: deploy
-#   script:
-#     - echo "Deploy stage would deploy application here..."
-#   when: on_success
+# # --- Test Deploy ---
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
+  script:
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_SERVER "
+        cd /home/vomerf/my_project &&
+        git pull origin main &&
+        source venv/bin/activate &&
+        pip install -r requirements.txt &&
+        sudo systemctl restart it_school.service
+      "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
