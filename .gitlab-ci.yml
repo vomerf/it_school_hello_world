@@ -1,10 +1,29 @@
 stages:
-  # - build
-  # - test
+  - build
   - deploy
 
+variables:
+  IMAGE_NAME: $DOCKER_HUB_USERNAME/it_school
 
-# # --- Test Deploy ---
+# --- 1. Build Docker image ---
+build_image:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    # Логинимся в Docker Hub
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+    # Собираем образ с тегом SHA и latest
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA .
+    - docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:latest
+    # Пушим оба тега
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHA
+    - docker push $IMAGE_NAME:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# --- 2. Deploy on server ---
 deploy_production:
   stage: deploy
   image: alpine:latest
@@ -17,11 +36,11 @@ deploy_production:
   script:
     - |
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
-        cd /home/vomerf/it_school &&
-        git pull origin main &&
-        source venv/bin/activate &&
-        pip install -r requirements.txt &&
-        sudo systemctl restart it_school.service
+        docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD &&
+        docker pull $IMAGE_NAME:latest &&
+        docker stop it_school || true &&
+        docker rm it_school || true &&
+        docker run -d --name it_school -p 8000:8000 $IMAGE_NAME:latest
       "
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
