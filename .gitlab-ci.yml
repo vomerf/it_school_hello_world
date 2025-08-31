@@ -17,7 +17,7 @@ deploy_production:
   script:
     - |
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
-        cd /home/vomerf/my_project &&
+        cd /home/vomerf/it_school &&
         git pull origin main &&
         source venv/bin/activate &&
         pip install -r requirements.txt &&
