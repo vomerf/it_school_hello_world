@@ -40,7 +40,19 @@ deploy_production:
         docker pull $IMAGE_NAME:latest &&
         docker stop it_school || true &&
         docker rm it_school || true &&
-        docker run -d --name it_school -p 8000:8000 $IMAGE_NAME:latest
+        docker run -d --name it_school -p 8000:8000 \
+          -e DB_HOST=$DB_HOST \
+          -e DB_USER=$DB_USER \
+          -e DB_PASS=$DB_PASS \
+          -e DB_PORT=$DB_PORT \
+          -e DB_NAME=$DB_NAME \
+          -e TEST_DB_USER=$TEST_DB_USER \
+          -e TEST_DB_PASS=$TEST_DB_PASS \
+          -e TEST_DB_HOST=$TEST_DB_HOST \
+          -e TEST_DB_PORT=$TEST_DB_PORT \
+          -e TEST_DB_NAME=$TEST_DB_NAME \
+          -e TOKEN_HERO=$TOKEN_HERO \
+          $IMAGE_NAME:latest
       "
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
