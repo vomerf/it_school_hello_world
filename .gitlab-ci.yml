@@ -4,6 +4,7 @@ stages:
 
 variables:
   IMAGE_NAME: $DOCKER_HUB_USERNAME/it_school
+  VERSION_TAG: 1.0.$CI_PIPELINE_IID
 
 # --- 1. Build Docker image ---
 build_image:
@@ -16,10 +17,10 @@ build_image:
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
     # Собираем образ с тегом SHA и latest
     - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA .
-    - docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:latest
+    - docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:$VERSION_TAG
     # Пушим оба тега
     - docker push $IMAGE_NAME:$CI_COMMIT_SHA
-    - docker push $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$VERSION_TAG
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
@@ -37,10 +38,10 @@ deploy_production:
     - |
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
         docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD &&
-        docker pull $IMAGE_NAME:latest &&
+        docker pull $IMAGE_NAME:VERSION_TAG &&
         docker stop it_school || true &&
         docker rm it_school || true &&
-        docker run -d --name it_school -p 8000:8000 \
+        docker run -d --restart always --name it_school -p 8000:8000 \
           -e DB_HOST=$DB_HOST \
           -e DB_USER=$DB_USER \
           -e DB_PASS=$DB_PASS \
@@ -52,7 +53,10 @@ deploy_production:
           -e TEST_DB_PORT=$TEST_DB_PORT \
           -e TEST_DB_NAME=$TEST_DB_NAME \
           -e TOKEN_HERO=$TOKEN_HERO \
-          $IMAGE_NAME:latest
+          --health-cmd='curl -f http://localhost:8000/health || exit 1' \
+          --health-interval=30s \
+          --health-retries=3 \
+          $IMAGE_NAME:$VERSION_TAG
       "
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
