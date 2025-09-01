@@ -38,7 +38,7 @@ deploy_production:
     - |
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
         docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD &&
-        docker pull $IMAGE_NAME:VERSION_TAG &&
+        docker pull $IMAGE_NAME:$VERSION_TAG &&
         docker stop it_school || true &&
         docker rm it_school || true &&
         docker run -d --restart always --name it_school -p 8000:8000 \
