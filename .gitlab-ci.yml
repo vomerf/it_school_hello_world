@@ -38,7 +38,7 @@ deploy_production:
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
         export IMAGE_NAME=$IMAGE_NAME &&
         export VERSION_TAG=$VERSION_TAG &&
-        cd ~/project &&
+        cd ~ &&
         docker-compose pull app &&
         docker-compose up -d app
       "
