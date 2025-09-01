@@ -39,8 +39,8 @@ deploy_production:
         export IMAGE_NAME=$IMAGE_NAME &&
         export VERSION_TAG=$VERSION_TAG &&
         cd ~ &&
-        docker-compose pull app &&
-        docker-compose up -d app
+        docker compose pull app &&
+        docker compose up -d app
       "
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
