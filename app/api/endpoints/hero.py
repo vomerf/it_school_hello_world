@@ -1,5 +1,6 @@
-from typing import Literal, Optional
 
+import redis.asyncio as redis
+from typing import Literal, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

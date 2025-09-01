@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     TEST_DB_HOST: str
     TEST_DB_PORT: str
     TEST_DB_NAME: str
+    REDIS_HOST: str
+    REDIS_PORT: str
     TOKEN_HERO: str
     BASE_URL_HERO: str = "https://superheroapi.com/api.php"
 

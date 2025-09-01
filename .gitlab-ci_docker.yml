@@ -24,23 +24,39 @@ build_image:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+# --- 2. Deploy on server ---
 deploy_production:
   stage: deploy
   image: alpine:latest
   before_script:
     - apk add --no-cache openssh-client
     - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
   script:
     - |
       ssh $DEPLOY_USER@$DEPLOY_SERVER "
-        export IMAGE_NAME=$IMAGE_NAME &&
-        export VERSION_TAG=$VERSION_TAG &&
-        cd ~/project &&
-        docker-compose pull app &&
-        docker-compose up -d app
+        docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD &&
+        docker pull $IMAGE_NAME:$VERSION_TAG &&
+        docker stop it_school || true &&
+        docker rm it_school || true &&
+        docker run -d --restart always --name it_school -p 8000:8000 \
+          -e DB_HOST=$DB_HOST \
+          -e DB_USER=$DB_USER \
+          -e DB_PASS=$DB_PASS \
+          -e DB_PORT=$DB_PORT \
+          -e DB_NAME=$DB_NAME \
+          -e TEST_DB_USER=$TEST_DB_USER \
+          -e TEST_DB_PASS=$TEST_DB_PASS \
+          -e TEST_DB_HOST=$TEST_DB_HOST \
+          -e TEST_DB_PORT=$TEST_DB_PORT \
+          -e TEST_DB_NAME=$TEST_DB_NAME \
+          -e TOKEN_HERO=$TOKEN_HERO \
+          --health-cmd='curl -f http://localhost:8000/health || exit 1' \
+          --health-interval=30s \
+          --health-retries=3 \
+          $IMAGE_NAME:$VERSION_TAG
       "
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
